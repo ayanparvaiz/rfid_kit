@@ -25,8 +25,8 @@ class ReaderSession {
     DeviceManager? manager,
     this.cooldown = const Duration(seconds: 30),
     @visibleForTesting DateTime Function()? clock,
-  })  : manager = manager ?? DeviceManager.instance,
-        _now = clock ?? DateTime.now;
+  }) : manager = manager ?? DeviceManager.instance,
+       _now = clock ?? DateTime.now;
 
   /// The shared session.
   static final ReaderSession instance = ReaderSession();
@@ -148,8 +148,7 @@ class ReaderSession {
     final started = _now();
     String took() =>
         '${(_now().difference(started).inMilliseconds / 1000).toStringAsFixed(1)}s';
-    final reader =
-        _rfid ?? await manager.resolveReader(connection: connection);
+    final reader = _rfid ?? await manager.resolveReader(connection: connection);
     _rfid = reader;
     if (!reader.isConnected) {
       try {
@@ -195,8 +194,9 @@ class ReaderSession {
   void _listen() {
     if (_listening || !DeviceManager.isHardwareCapable) return;
     _listening = true;
-    const MethodChannel(RfidKitChannels.rfidMethods)
-        .setMethodCallHandler((call) async {
+    const MethodChannel(RfidKitChannels.rfidMethods).setMethodCallHandler((
+      call,
+    ) async {
       handleNativeCall(call.method, call.arguments);
       return null;
     });

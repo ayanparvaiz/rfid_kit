@@ -29,16 +29,16 @@ class ConnectionConfig {
   });
 
   const ConnectionConfig.tcp(String host, {int port = 9100})
-      : this(transport: DeviceTransport.tcp, host: host, port: port);
+    : this(transport: DeviceTransport.tcp, host: host, port: port);
 
   const ConnectionConfig.bluetooth(String mac)
-      : this(transport: DeviceTransport.bluetooth, mac: mac);
+    : this(transport: DeviceTransport.bluetooth, mac: mac);
 
   const ConnectionConfig.bluetoothLe(String mac)
-      : this(transport: DeviceTransport.bluetoothLe, mac: mac);
+    : this(transport: DeviceTransport.bluetoothLe, mac: mac);
 
   const ConnectionConfig.usb(String usbId)
-      : this(transport: DeviceTransport.usb, usbId: usbId);
+    : this(transport: DeviceTransport.usb, usbId: usbId);
 
   const ConnectionConfig.mock() : this(transport: DeviceTransport.mock);
 
@@ -53,18 +53,19 @@ class ConnectionConfig {
 
   /// Flattened for sending across the platform channel.
   Map<String, dynamic> toArgs() => {
-        'transport': transport.name,
-        'host': host,
-        'port': port,
-        'mac': mac,
-        'usbId': usbId,
-      };
+    'transport': transport.name,
+    'host': host,
+    'port': port,
+    'mac': mac,
+    'usbId': usbId,
+  };
 
   /// Serializable form (same shape as [toArgs]) for persisting to storage.
   Map<String, dynamic> toMap() => toArgs();
 
   /// Rebuilds a config from its [toMap] form.
-  factory ConnectionConfig.fromMap(Map<String, dynamic> map) => ConnectionConfig(
+  factory ConnectionConfig.fromMap(Map<String, dynamic> map) =>
+      ConnectionConfig(
         transport: DeviceTransport.values.firstWhere(
           (t) => t.name == map['transport'],
           orElse: () => DeviceTransport.mock,

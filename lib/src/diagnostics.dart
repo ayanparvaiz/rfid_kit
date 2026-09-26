@@ -5,11 +5,7 @@ import 'channels.dart';
 /// A crash the native side recorded on the way down, read back on the next
 /// launch.
 class NativeCrash {
-  const NativeCrash({
-    required this.fatal,
-    required this.trace,
-    this.thread,
-  });
+  const NativeCrash({required this.fatal, required this.trace, this.thread});
 
   /// False when the throw came from a Zebra SDK thread and the crash guard let
   /// that thread die without taking the app down.
@@ -45,8 +41,7 @@ class NativeCrash {
   }
 
   @override
-  String toString() =>
-      'NativeCrash(fatal: $fatal, thread: $thread)\n$trace';
+  String toString() => 'NativeCrash(fatal: $fatal, thread: $thread)\n$trace';
 }
 
 /// Native crash reporting for a device you can't attach a cable to.

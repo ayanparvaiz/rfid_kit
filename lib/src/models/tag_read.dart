@@ -30,7 +30,9 @@ class TagRead {
       rssi: (map['rssi'] as num).toInt(),
       antenna: (map['antenna'] as num?)?.toInt(),
       seenAt: map['seenAtMs'] != null
-          ? DateTime.fromMillisecondsSinceEpoch((map['seenAtMs'] as num).toInt())
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (map['seenAtMs'] as num).toInt(),
+            )
           : DateTime.now(),
     );
   }

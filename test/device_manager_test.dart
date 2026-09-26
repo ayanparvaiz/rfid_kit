@@ -15,11 +15,13 @@ void main() {
     expect(await manager.resolveReader(), isA<MockRfidReader>());
   });
 
-  test('auto mode falls back to the mock when nothing answers the probe',
-      () async {
-    final manager = DeviceManager();
-    expect(await manager.resolveReader(), isA<MockRfidReader>());
-  });
+  test(
+    'auto mode falls back to the mock when nothing answers the probe',
+    () async {
+      final manager = DeviceManager();
+      expect(await manager.resolveReader(), isA<MockRfidReader>());
+    },
+  );
 
   test('real mode fails loudly when nothing answers the probe', () async {
     final manager = DeviceManager(mode: DeviceMode.real);

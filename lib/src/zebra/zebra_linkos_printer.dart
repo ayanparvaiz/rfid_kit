@@ -87,8 +87,9 @@ class ZebraLinkOsPrinter implements LabelPrinter {
   @override
   Future<void> sendRaw(String commands) async {
     try {
-      await _methods
-          .invokeMethod(RfidKitChannels.mSendRaw, {'commands': commands});
+      await _methods.invokeMethod(RfidKitChannels.mSendRaw, {
+        'commands': commands,
+      });
     } on PlatformException catch (e) {
       throw DeviceException(_failure('Send to', e), cause: e);
     }

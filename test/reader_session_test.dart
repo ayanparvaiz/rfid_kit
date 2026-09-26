@@ -78,8 +78,13 @@ void main() {
     now = now.add(const Duration(seconds: 10));
     await expectLater(
       session.reader(),
-      throwsA(isA<DeviceConnectionException>().having(
-          (e) => e.message, 'message', contains('21 more seconds'))),
+      throwsA(
+        isA<DeviceConnectionException>().having(
+          (e) => e.message,
+          'message',
+          contains('21 more seconds'),
+        ),
+      ),
     );
     expect(reader.connects, 1, reason: 'the cooldown must not touch the radio');
 
@@ -98,8 +103,7 @@ void main() {
     await sub.cancel();
   });
 
-  test('release drops the reader so the next call opens a fresh one',
-      () async {
+  test('release drops the reader so the next call opens a fresh one', () async {
     await session.reader();
     await session.release();
     expect(reader.isConnected, isFalse);
@@ -107,23 +111,25 @@ void main() {
     expect(manager.resolves, 2);
   });
 
-  test('trigger events drive triggerHeld, and only real changes are streamed',
-      () async {
-    final changes = <bool>[];
-    final sub = session.triggerHeldChanges.listen(changes.add);
+  test(
+    'trigger events drive triggerHeld, and only real changes are streamed',
+    () async {
+      final changes = <bool>[];
+      final sub = session.triggerHeldChanges.listen(changes.add);
 
-    session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_PRESSED (1)');
-    session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_PRESSED (1)');
-    expect(session.triggerHeld.value, isTrue);
-    session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_RELEASED (0)');
-    session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_LOCK (5)');
-    await Future<void>.delayed(Duration.zero);
+      session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_PRESSED (1)');
+      session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_PRESSED (1)');
+      expect(session.triggerHeld.value, isTrue);
+      session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_RELEASED (0)');
+      session.handleNativeCall('onTrigger', 'HANDHELD_TRIGGER_LOCK (5)');
+      await Future<void>.delayed(Duration.zero);
 
-    expect(session.triggerSeen.value, isTrue);
-    expect(session.triggerHeld.value, isFalse);
-    expect(changes, [true, false]);
-    await sub.cancel();
-  });
+      expect(session.triggerSeen.value, isTrue);
+      expect(session.triggerHeld.value, isFalse);
+      expect(changes, [true, false]);
+      await sub.cancel();
+    },
+  );
 
   test('reader notes from the native side reach the notes stream', () async {
     final notes = <String>[];

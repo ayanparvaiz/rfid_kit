@@ -98,7 +98,10 @@ class _HomePageState extends State<HomePage> {
           for (final note in _notes)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(note, style: const TextStyle(fontFamily: 'monospace')),
+              child: Text(
+                note,
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
             ),
           if (_notes.isEmpty) const Text('Nothing logged yet.'),
         ],
@@ -120,12 +123,14 @@ class _HomePageState extends State<HomePage> {
               onPressed: _showLog,
             ),
           ],
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Inventory'),
-            Tab(text: 'Locate'),
-            Tab(text: 'Print'),
-            Tab(text: 'Scan'),
-          ]),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Inventory'),
+              Tab(text: 'Locate'),
+              Tab(text: 'Print'),
+              Tab(text: 'Scan'),
+            ],
+          ),
         ),
         body: Column(
           children: [
@@ -137,12 +142,18 @@ class _HomePageState extends State<HomePage> {
               onConnect: _connect,
             ),
             Expanded(
-              child: TabBarView(children: [
-                InventoryTab(reader: _reader, target: _target),
-                LocateTab(reader: _reader, session: _session, target: _target),
-                const PrintTab(),
-                const ScanTab(),
-              ]),
+              child: TabBarView(
+                children: [
+                  InventoryTab(reader: _reader, target: _target),
+                  LocateTab(
+                    reader: _reader,
+                    session: _session,
+                    target: _target,
+                  ),
+                  const PrintTab(),
+                  const ScanTab(),
+                ],
+              ),
             ),
           ],
         ),
@@ -281,7 +292,10 @@ class _InventoryTabState extends State<InventoryTab> {
               final epc = epcs[i];
               final info = _seen[epc]!;
               return ListTile(
-                title: Text(epc, style: const TextStyle(fontFamily: 'monospace')),
+                title: Text(
+                  epc,
+                  style: const TextStyle(fontFamily: 'monospace'),
+                ),
                 subtitle: Text('${info.rssi} dBm · ${info.count} reads'),
                 trailing: const Icon(Icons.my_location),
                 onTap: () {
@@ -340,8 +354,9 @@ class _LocateTabState extends State<LocateTab> {
           (value) => setState(() => _proximity = value),
           onError: (Object e) {
             if (!mounted) return;
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('$e')));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('$e')));
             _stop();
           },
         );
@@ -390,8 +405,8 @@ class _LocateTabState extends State<LocateTab> {
           !running
               ? '—'
               : reading
-                  ? '$_proximity%'
-                  : 'Hold the trigger',
+              ? '$_proximity%'
+              : 'Hold the trigger',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.displayMedium,
         ),
@@ -402,15 +417,13 @@ class _LocateTabState extends State<LocateTab> {
           borderRadius: BorderRadius.circular(8),
         ),
         const SizedBox(height: 8),
-        Text(
-          rssi == 0 ? 'no read' : '$rssi dBm',
-          textAlign: TextAlign.center,
-        ),
+        Text(rssi == 0 ? 'no read' : '$rssi dBm', textAlign: TextAlign.center),
         const SizedBox(height: 24),
         SwitchListTile(
           title: const Text('Confirm range'),
           subtitle: const Text(
-              'Short reach: at arm\'s length only the right tag still answers'),
+            'Short reach: at arm\'s length only the right tag still answers',
+          ),
           value: _near,
           onChanged: widget.reader == null
               ? null
@@ -442,13 +455,15 @@ class _PrintTabState extends State<PrintTab> {
   bool _busy = false;
 
   ConnectionConfig get _config => switch (_transport) {
-        DeviceTransport.tcp => ConnectionConfig.tcp(_address.text.trim()),
-        DeviceTransport.bluetooth =>
-          ConnectionConfig.bluetooth(_address.text.trim()),
-        DeviceTransport.bluetoothLe =>
-          ConnectionConfig.bluetoothLe(_address.text.trim()),
-        _ => const ConnectionConfig.mock(),
-      };
+    DeviceTransport.tcp => ConnectionConfig.tcp(_address.text.trim()),
+    DeviceTransport.bluetooth => ConnectionConfig.bluetooth(
+      _address.text.trim(),
+    ),
+    DeviceTransport.bluetoothLe => ConnectionConfig.bluetoothLe(
+      _address.text.trim(),
+    ),
+    _ => const ConnectionConfig.mock(),
+  };
 
   Future<void> _run(Future<void> Function() job, String done) async {
     setState(() => _busy = true);
@@ -470,21 +485,24 @@ class _PrintTabState extends State<PrintTab> {
   }
 
   Future<void> _connect() => _run(() async {
-        await _printer?.disconnect();
-        final printer =
-            await DeviceManager.instance.resolvePrinter(connection: _config);
-        await printer.connect();
-        setState(() => _printer = printer);
-      }, 'Printer connected');
+    await _printer?.disconnect();
+    final printer = await DeviceManager.instance.resolvePrinter(
+      connection: _config,
+    );
+    await printer.connect();
+    setState(() => _printer = printer);
+  }, 'Printer connected');
 
   Future<void> _print() => _run(
-        () => _printer!.printRfidLabel(RfidLabel(
-          barcode: _barcode.text.trim(),
-          epc: _epc.text.trim(),
-          lines: ['Printed by rfid_kit', DateTime.now().toString()],
-        )),
-        'Label sent',
-      );
+    () => _printer!.printRfidLabel(
+      RfidLabel(
+        barcode: _barcode.text.trim(),
+        epc: _epc.text.trim(),
+        lines: ['Printed by rfid_kit', DateTime.now().toString()],
+      ),
+    ),
+    'Label sent',
+  );
 
   @override
   void dispose() {
@@ -505,7 +523,10 @@ class _PrintTabState extends State<PrintTab> {
           segments: const [
             ButtonSegment(value: DeviceTransport.tcp, label: Text('WiFi')),
             ButtonSegment(value: DeviceTransport.bluetooth, label: Text('BT')),
-            ButtonSegment(value: DeviceTransport.bluetoothLe, label: Text('BLE')),
+            ButtonSegment(
+              value: DeviceTransport.bluetoothLe,
+              label: Text('BLE'),
+            ),
             ButtonSegment(value: DeviceTransport.mock, label: Text('Mock')),
           ],
           selected: {_transport},
@@ -566,8 +587,9 @@ class _ScanTabState extends State<ScanTab> {
   @override
   void initState() {
     super.initState();
-    _sub = HardwareScanner.instance.scans
-        .listen((code) => setState(() => _codes.insert(0, code)));
+    _sub = HardwareScanner.instance.scans.listen(
+      (code) => setState(() => _codes.insert(0, code)),
+    );
   }
 
   @override

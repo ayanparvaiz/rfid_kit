@@ -51,12 +51,14 @@ class MockRfidReader implements RfidReader {
   Future<void> startInventory({double? power}) async {
     _inventoryTimer?.cancel();
     _inventoryTimer = Timer.periodic(const Duration(milliseconds: 400), (_) {
-      _tags.add(TagRead(
-        epc: _sampleEpcs[_rng.nextInt(_sampleEpcs.length)],
-        rssi: -30 - _rng.nextInt(50),
-        antenna: 1,
-        seenAt: DateTime.now(),
-      ));
+      _tags.add(
+        TagRead(
+          epc: _sampleEpcs[_rng.nextInt(_sampleEpcs.length)],
+          rssi: -30 - _rng.nextInt(50),
+          antenna: 1,
+          seenAt: DateTime.now(),
+        ),
+      );
     });
   }
 

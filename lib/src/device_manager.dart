@@ -23,12 +23,18 @@ import 'zebra/zebra_rfid_reader.dart';
 enum DeviceMode { auto, mock, real }
 
 /// Builds an [RfidReader] for a probed device.
-typedef RfidReaderFactory = RfidReader Function(
-    DeviceDescriptor descriptor, ConnectionConfig? connection);
+typedef RfidReaderFactory =
+    RfidReader Function(
+      DeviceDescriptor descriptor,
+      ConnectionConfig? connection,
+    );
 
 /// Builds a [LabelPrinter] for a device + connection.
-typedef LabelPrinterFactory = LabelPrinter Function(
-    DeviceDescriptor descriptor, ConnectionConfig? connection);
+typedef LabelPrinterFactory =
+    LabelPrinter Function(
+      DeviceDescriptor descriptor,
+      ConnectionConfig? connection,
+    );
 
 /// The single place that decides *which* concrete device implementation an app
 /// runs against:
@@ -118,8 +124,9 @@ class DeviceManager {
     if (mode == DeviceMode.real) {
       // No descriptor at all — the native bridge didn't answer the probe.
       throw const NoDeviceBackendException(
-          'RFID reader could not be probed (DeviceMode.real). Make sure the '
-          'app is running on a device with the rfid_kit native side.');
+        'RFID reader could not be probed (DeviceMode.real). Make sure the '
+        'app is running on a device with the rfid_kit native side.',
+      );
     }
     return MockRfidReader();
   }
@@ -139,10 +146,12 @@ class DeviceManager {
     // request for the simulator, not an unset printer.
     if (mode == DeviceMode.real && isHardwareCapable && connection == null) {
       throw const NoDeviceBackendException(
-          'No printer connection given (DeviceMode.real). Pass a '
-          'ConnectionConfig for the printer.');
+        'No printer connection given (DeviceMode.real). Pass a '
+        'ConnectionConfig for the printer.',
+      );
     }
-    final useMock = mode == DeviceMode.mock ||
+    final useMock =
+        mode == DeviceMode.mock ||
         !isHardwareCapable ||
         connection == null ||
         connection.transport == DeviceTransport.mock;

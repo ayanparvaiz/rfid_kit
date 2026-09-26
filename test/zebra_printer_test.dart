@@ -33,12 +33,14 @@ void main() {
   });
 
   test('a label goes over with its free-text lines', () async {
-    await printer.printRfidLabel(const RfidLabel(
-      barcode: 'SKU-1',
-      epc: 'E28011700000020000000001',
-      quantity: 2,
-      lines: ['Op: Ayan', '2026-09-26'],
-    ));
+    await printer.printRfidLabel(
+      const RfidLabel(
+        barcode: 'SKU-1',
+        epc: 'E28011700000020000000001',
+        quantity: 2,
+        lines: ['Op: Ayan', '2026-09-26'],
+      ),
+    );
     expect(calls.single.method, 'printRfidLabel');
     expect(calls.single.arguments, {
       'barcode': 'SKU-1',
@@ -64,15 +66,17 @@ void main() {
     });
     expect(
       printer.connect(),
-      throwsA(isA<DeviceConnectionException>().having(
-        (e) => e.message,
-        'message',
-        allOf(
-          contains('bluetooth AC:3F:A4:11:22:33'),
-          contains('Bluetooth is turned off'),
-          contains('cause: ConnectionException'),
+      throwsA(
+        isA<DeviceConnectionException>().having(
+          (e) => e.message,
+          'message',
+          allOf(
+            contains('bluetooth AC:3F:A4:11:22:33'),
+            contains('Bluetooth is turned off'),
+            contains('cause: ConnectionException'),
+          ),
         ),
-      )),
+      ),
     );
   });
 }

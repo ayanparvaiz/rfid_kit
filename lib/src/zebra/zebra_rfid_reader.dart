@@ -67,9 +67,8 @@ class ZebraRfidReader implements RfidReader {
   }
 
   @override
-  Stream<TagRead> get tags => _tagEvents
-      .receiveBroadcastStream()
-      .map((e) => TagRead.fromMap(e as Map));
+  Stream<TagRead> get tags =>
+      _tagEvents.receiveBroadcastStream().map((e) => TagRead.fromMap(e as Map));
 
   @override
   Future<void> startInventory({double? power}) =>
@@ -81,8 +80,10 @@ class ZebraRfidReader implements RfidReader {
 
   @override
   Stream<int> locate(List<String> epcs, {Stream<bool>? live}) {
-    final targets =
-        epcs.map((e) => e.toUpperCase()).where((e) => e.isNotEmpty).toSet();
+    final targets = epcs
+        .map((e) => e.toUpperCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
     // Locate by reusing the RELIABLE inventory/tags path (the same one that
     // reads a tag's EPC during registration) and computing the proximity here in
     // Dart: filter to the target EPC and map its RSSI to a 0–100 meter. The
@@ -169,6 +170,7 @@ class ZebraRfidReader implements RfidReader {
     void trim(DateTime now) {
       recent.removeWhere((r) => now.difference(r.at).inMilliseconds > windowMs);
     }
+
     void noteRead(int value) {
       final now = DateTime.now();
       if (lastRead != null) {
@@ -179,6 +181,7 @@ class ZebraRfidReader implements RfidReader {
       recent.add((at: now, value: value));
       trim(now);
     }
+
     void resetSession() {
       recent.clear();
       gaps.clear();
@@ -186,6 +189,7 @@ class ZebraRfidReader implements RfidReader {
       displayed = 0;
       _lastRssi = 0;
     }
+
     // True once the READER has told us a distance of its own. From then on its
     // figure is the only one used and our RSSI estimate is ignored.
     var readerKnowsDistance = false;
@@ -217,7 +221,9 @@ class ZebraRfidReader implements RfidReader {
             // No locate channel on this device — the RSSI path carries on.
           },
         );
-        sub = tags.where((t) => targets.contains(t.epc.toUpperCase())).listen((t) {
+        sub = tags.where((t) => targets.contains(t.epc.toUpperCase())).listen((
+          t,
+        ) {
           // Which of the hunted labels actually answered — worth showing,
           // because on an item with several labels that is the difference
           // between "found the box I expected" and "found the other box on the
@@ -258,7 +264,8 @@ class ZebraRfidReader implements RfidReader {
           if (recent.isNotEmpty && silentMs < holdMs) {
             // Ease toward the median of the last windowMs of reads.
             displayed +=
-                easing * (_median([for (final r in recent) r.value]) - displayed);
+                easing *
+                (_median([for (final r in recent) r.value]) - displayed);
           } else {
             // Long silence → tag lost/out of range: ease down gently, not a crash.
             displayed *= decay;
@@ -283,12 +290,13 @@ class ZebraRfidReader implements RfidReader {
         // Arm the reader for THIS tag, so it can run its own locationing rather
         // than a plain inventory we then filter ourselves.
         _methods
-            .invokeMethod(
-                RfidKitChannels.mStartLocate, {'epcs': targets.toList()})
+            .invokeMethod(RfidKitChannels.mStartLocate, {
+              'epcs': targets.toList(),
+            })
             .catchError((Object e, StackTrace s) {
-          controller.addError(e, s);
-          return null;
-        });
+              controller.addError(e, s);
+              return null;
+            });
       },
       onCancel: () async {
         ticker?.cancel();
@@ -358,7 +366,9 @@ class ZebraRfidReader implements RfidReader {
 
   @override
   Future<void> setLocateRange(bool near) async {
-    await _methods.invokeMethod(RfidKitChannels.mSetLocateRange, {'near': near});
+    await _methods.invokeMethod(RfidKitChannels.mSetLocateRange, {
+      'near': near,
+    });
   }
 
   @override

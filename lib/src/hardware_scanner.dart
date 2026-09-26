@@ -45,8 +45,9 @@ class HardwareScanner {
   Future<void> setEnabled(bool enabled) async {
     if (!DeviceManager.isHardwareCapable) return;
     try {
-      await const MethodChannel(RfidKitChannels.scannerMethods)
-          .invokeMethod('setEnabled', {'enabled': enabled});
+      await const MethodChannel(
+        RfidKitChannels.scannerMethods,
+      ).invokeMethod('setEnabled', {'enabled': enabled});
     } on MissingPluginException {
       // No native side — nothing to toggle.
     }
