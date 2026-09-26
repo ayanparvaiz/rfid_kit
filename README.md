@@ -133,11 +133,18 @@ import 'package:rfid_kit/rfid_kit.dart';
 ### Pick mock or real hardware
 
 ```dart
-// auto: real hardware when present, the simulator otherwise (default).
-// real: fail loudly if no hardware — use this for the build you ship.
-// mock: always the simulator — tests, web, laptops.
+// auto: the Zebra reader when this device has Zebra RFID hardware, the
+//       simulator otherwise — ordinary phones, emulators, web, tests (default).
+// real: always the Zebra reader, failing loudly without hardware — use this
+//       for the build you ship.
+// mock: always the simulator.
 DeviceManager.instance.mode = DeviceMode.real;
 ```
+
+`auto` counts a Zebra handheld, an installed Zebra RFID service or a paired
+RFD sled as hardware. Until Bluetooth permission is granted a paired sled can't
+be ruled out, so `auto` tries the reader and its connect error says what's
+missing. Request the Bluetooth permissions before the first `reader()` call.
 
 ### Open the reader
 
