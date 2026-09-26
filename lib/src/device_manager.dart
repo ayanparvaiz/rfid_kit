@@ -15,8 +15,12 @@ import 'zebra/zebra_rfid_reader.dart';
 
 /// How [DeviceManager] obtains its devices.
 ///
-///  * [auto] — probe the hardware; use the real backend if found, otherwise
-///    fall back to the mock. Safe default for development.
+///  * [auto] — use the Zebra reader when this device has Zebra RFID hardware
+///    (a Zebra handheld, the Zebra RFID service, or a paired RFD sled), and the
+///    simulator otherwise — on an ordinary phone, an emulator, web or tests.
+///    Before Bluetooth permission is granted a paired sled can't be ruled
+///    out, so the reader is tried and its connect error says what's missing.
+///    Safe default for development.
 ///  * [mock] — force the simulator. No hardware needed (tests, web, laptop).
 ///  * [real] — force real hardware; fail loudly if none is detected. Use this
 ///    for the build you ship, so a mock can never sneak into production.
@@ -88,10 +92,15 @@ class DeviceManager {
   /// Asks the native bridge to describe the current hardware. Returns `null`
   /// on platforms without the bridge or when probing fails.
   Future<DeviceDescriptor?> probe() async {
+    final raw = await _probeRaw();
+    return raw == null ? null : DeviceDescriptor.fromMap(raw);
+  }
+
+  Future<Map<dynamic, dynamic>?> _probeRaw() async {
     if (!isHardwareCapable) return null;
     try {
       final raw = await _probe.invokeMethod(RfidKitChannels.mProbe);
-      if (raw is Map) return DeviceDescriptor.fromMap(raw);
+      if (raw is Map) return raw;
     } on PlatformException {
       // Bridge present but errored.
     } on MissingPluginException {
@@ -109,7 +118,13 @@ class DeviceManager {
     if (mode == DeviceMode.mock || !isHardwareCapable) {
       return MockRfidReader();
     }
-    final descriptor = await probe();
+    final raw = await _probeRaw();
+    // The native side answers false only when it is sure there is no Zebra
+    // RFID hardware to reach; null ("can't tell yet") still tries the reader.
+    if (mode == DeviceMode.auto && raw?['zebraRfid'] == false) {
+      return MockRfidReader();
+    }
+    final descriptor = raw == null ? null : DeviceDescriptor.fromMap(raw);
     if (descriptor != null) {
       final factory = _readers[descriptor.model.toUpperCase()];
       if (factory != null) return factory(descriptor, connection);

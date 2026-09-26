@@ -40,6 +40,39 @@ void main() {
     expect(reader.descriptor.displayName, 'Zebra TC22R');
   });
 
+  void probeAnswers(Object? zebraRfid) {
+    messenger.setMockMethodCallHandler(rfid, (call) async {
+      return {'model': 'Pixel 9', 'vendor': 'Google', 'zebraRfid': zebraRfid};
+    });
+  }
+
+  test(
+    'auto mode runs the simulator on a phone with no Zebra hardware',
+    () async {
+      probeAnswers(false);
+      expect(await DeviceManager().resolveReader(), isA<MockRfidReader>());
+    },
+  );
+
+  test('real mode still drives the reader there, so it fails loudly', () async {
+    probeAnswers(false);
+    final manager = DeviceManager(mode: DeviceMode.real);
+    expect(await manager.resolveReader(), isA<ZebraRfidReader>());
+  });
+
+  test(
+    'auto mode tries the reader when hardware cannot be ruled out',
+    () async {
+      probeAnswers(null); // e.g. Bluetooth permission not granted yet
+      expect(await DeviceManager().resolveReader(), isA<ZebraRfidReader>());
+    },
+  );
+
+  test('auto mode drives the reader on Zebra hardware', () async {
+    probeAnswers(true);
+    expect(await DeviceManager().resolveReader(), isA<ZebraRfidReader>());
+  });
+
   test('a registered model gets its own factory', () async {
     messenger.setMockMethodCallHandler(rfid, (call) async {
       return {'model': 'fxr90', 'vendor': 'Zebra'};
