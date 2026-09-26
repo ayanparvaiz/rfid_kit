@@ -1,0 +1,34 @@
+name: rfid_kit
+description: >-
+  Zebra RFID readers (inventory, Geiger-counter locate, hardware trigger),
+  Link-OS RFID label printers and DataWedge barcode scanners for Flutter.
+version: 0.1.0
+homepage: https://github.com/ayanparvaiz/rfid_kit
+repository: https://github.com/ayanparvaiz/rfid_kit
+issue_tracker: https://github.com/ayanparvaiz/rfid_kit/issues
+topics:
+  - rfid
+  - zebra
+  - barcode
+  - printer
+  - hardware
+
+environment:
+  sdk: ^3.9.0
+  flutter: '>=3.35.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dev.devcenter.rfid_kit
+        pluginClass: RfidKitPlugin
