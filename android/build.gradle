@@ -1,0 +1,85 @@
+group = "dev.devcenter.rfid_kit"
+version = "1.0-SNAPSHOT"
+
+buildscript {
+    ext.kotlin_version = "2.1.0"
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.9.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: "com.android.library"
+// Kotlin, on every Flutter version:
+//  * Flutter 3.44+ (AGP 9) applies Kotlin to plugins itself, or AGP does
+//    ("built-in Kotlin"). It decides by scanning this file's TEXT for an
+//    `apply plugin:` line naming kotlin-android, and warns when it finds one —
+//    so the call below is deliberately not written in that form.
+//  * Older Flutter versions (AGP 8) need it applied here.
+if (com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize(".")[0].toInteger() < 9) {
+    project.pluginManager.apply("org.jetbrains.kotlin.android")
+}
+
+// The Zebra SDKs are proprietary and are NOT shipped with this plugin. The host
+// app keeps them in its own android/app/libs (see the README) and packages them;
+// the plugin only compiles against that same copy. Override the folder with
+// `rfidKit.zebraLibs=<path relative to android/>` in gradle.properties.
+def zebraLibs = rootProject.file(project.findProperty("rfidKit.zebraLibs") ?: "app/libs")
+def zebraFiles = zebraLibs.listFiles() ?: new File[0]
+if (!zebraFiles.any { it.name.startsWith("rfidapi3lib") && it.name.endsWith(".aar") } ||
+        !zebraFiles.any { it.name == "ZSDK_ANDROID_API.jar" }) {
+    throw new GradleException(
+        "rfid_kit: Zebra SDK files not found in ${zebraLibs}.\n" +
+            "Download the Zebra RFID SDK for Android (rfidapi3lib-*.aar) and the " +
+            "Link-OS SDK (ZSDK_ANDROID_API.jar + its dependency jars) from Zebra, " +
+            "copy them into android/app/libs, and follow the Android setup in the " +
+            "rfid_kit README."
+    )
+}
+
+android {
+    namespace = "dev.devcenter.rfid_kit"
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+    }
+
+    defaultConfig {
+        // The Zebra RFID SDK (rfidapi3lib) declares minSdk 29.
+        minSdk = 29
+        // Keeps the SDKs' reflection-only classes alive in a minified release.
+        consumerProguardFiles("consumer-rules.pro")
+    }
+}
+
+// Set on the compile tasks rather than in a `kotlin {}` block: with built-in
+// Kotlin that extension does not exist yet while this script is evaluated.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+}
+
+dependencies {
+    compileOnly(fileTree(dir: zebraLibs, include: ["*.jar", "*.aar"]))
+    // Runtime deps the Zebra RFID SDK relies on but does not declare itself.
+    implementation("com.google.code.gson:gson:2.13.2")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+}

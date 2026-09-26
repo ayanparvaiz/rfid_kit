@@ -1,0 +1,33 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- TCP/WiFi printing -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Bluetooth readers (RFD40 / RFD8500 sleds) and printers over BT / BLE -->
+    <!-- Android 11 (API 30) and below -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>
+    <!-- Android 12 (API 31) and above -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+
+    <!-- Optional hardware: the app must still install on devices without it -->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+
+    <queries>
+        <!-- Zebra DataWedge: on Android 11+ package-visibility rules hide other
+             apps unless declared here. Without this the CREATE_PROFILE /
+             SET_CONFIG broadcasts never reach DataWedge, and it stays on its
+             default keystroke profile. -->
+        <package android:name="com.symbol.datawedge"/>
+        <!-- Zebra RFID API3 reaches an INTEGRATED reader (TC22R, MC33xx, a
+             snapped-on RFD40) by binding to these Zebra services. They live in
+             other packages, so the same visibility rule applies: without these
+             entries GetAvailableRFIDReaderList() comes back empty even though
+             the reader is built into the device. -->
+        <package android:name="com.zebra.rfid.rfidmanager"/>
+        <package android:name="com.zebra.rfidhost"/>
+    </queries>
+</manifest>
