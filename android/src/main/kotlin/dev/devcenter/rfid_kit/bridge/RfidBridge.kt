@@ -1,6 +1,9 @@
 package dev.devcenter.rfid_kit.bridge
 
+import android.Manifest
+import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -117,6 +120,7 @@ class RfidBridge(
             "vendor" to (Build.MANUFACTURER ?: "Zebra"),
             "model" to model,
             "transport" to "integrated",
+            "zebraRfid" to zebraRfidPresent(),
             "capabilities" to mapOf(
                 "canReadRfid" to true,
                 "canLocateRfid" to true,
@@ -124,6 +128,47 @@ class RfidBridge(
                 "canScanBarcode" to true,
             ),
         )
+    }
+
+    /**
+     * Whether this device can reach Zebra RFID hardware: true, false, or null
+     * when that can't be known yet.
+     *
+     * DeviceManager's `auto` mode uses this to run the simulator on an ordinary
+     * phone or emulator instead of a reader that can only fail to connect. So
+     * it must never say false on real hardware: anything Zebra-made, anything
+     * with the Zebra RFID service installed, or anything with an RFD sled
+     * paired counts. Without Bluetooth permission a paired sled can't be ruled
+     * out, so the answer is null and the reader is tried — its connect error
+     * then names the missing permission.
+     */
+    private fun zebraRfidPresent(): Boolean? {
+        if (Build.MANUFACTURER?.contains("zebra", ignoreCase = true) == true) return true
+        // The services an integrated reader binds to (declared in <queries>).
+        for (service in ZEBRA_RFID_SERVICES) {
+            val installed = try {
+                context.packageManager.getPackageInfo(service, 0)
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
+                false
+            }
+            if (installed) return true
+        }
+        val adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)
+            ?.adapter ?: return false // no Bluetooth: no sled either
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            return null
+        }
+        return try {
+            adapter.bondedDevices.orEmpty().any {
+                it.name?.startsWith("RFD", ignoreCase = true) == true
+            }
+        } catch (_: SecurityException) {
+            null
+        }
     }
 
     override fun onTag(epc: String, rssi: Int, antenna: Int?) {
@@ -199,5 +244,6 @@ class RfidBridge(
         private const val CH_METHODS = "rfid_kit/rfid"
         private const val CH_TAGS = "rfid_kit/rfid/tags"
         private const val CH_LOCATE = "rfid_kit/rfid/locate"
+        private val ZEBRA_RFID_SERVICES = listOf("com.zebra.rfid.rfidmanager", "com.zebra.rfidhost")
     }
 }
